@@ -40,8 +40,8 @@ extern crate serde_derive;
 
 pub mod provider;
 
-pub type SMSServiceError = Box<dyn std::error::Error>;
-type SMSServiceResult<T> = Result<T, SMSServiceError>;
+pub type SmsServiceError = Box<dyn std::error::Error>;
+type SmsServiceResult<T> = Result<T, SmsServiceError>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {

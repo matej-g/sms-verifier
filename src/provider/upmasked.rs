@@ -2,8 +2,8 @@ use awc::Client;
 use url::Url;
 
 use crate::{
-    provider::{Message, Number, ProviderClient, SMSServiceError},
-    SMSServiceResult,
+    provider::{Message, Number, ProviderClient, SmsServiceError},
+    SmsServiceResult,
 };
 
 const UPMASKED_URL: &str = "https://upmasked.com/";
@@ -37,14 +37,17 @@ impl Default for UpmaskedProvider {
 
 #[async_trait::async_trait(?Send)]
 impl ProviderClient for UpmaskedProvider {
-    async fn get_all_numbers(&mut self) -> SMSServiceResult<Vec<Number>> {
+    async fn get_all_numbers(&mut self) -> SmsServiceResult<Vec<Number>> {
         let url = self.base_url.join("/api/sms/numbers").expect("valid URL");
         let mut res = self.client.get(url.as_str()).send().await?;
         let json: Vec<Number> = res.json().await?;
         Ok(json)
     }
 
-    async fn get_messages(&mut self, number: &Number) -> Result<Vec<Message>, SMSServiceError> {
+    async fn get_messages(
+        &mut self,
+        number: &Number,
+    ) -> Result<Vec<Message>, SmsServiceError> {
         let url = self
             .base_url
             .join(format!("/api/sms/messages/{}", number.number).as_str())

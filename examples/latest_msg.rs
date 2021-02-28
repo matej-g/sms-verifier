@@ -20,11 +20,11 @@ async fn main() {
                     Error::NotFound => {
                         println!("Sorry, no message from {} found.", ORIGIN);
                         return;
-                    }
+                    },
                 }
             }
 
             println!("Error occured: {}", e)
-        }
+        },
     }
 }

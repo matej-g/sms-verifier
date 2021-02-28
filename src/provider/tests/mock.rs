@@ -1,6 +1,6 @@
 use crate::{
     provider::{Message, Number, ProviderClient},
-    SMSServiceResult,
+    SmsServiceResult,
 };
 
 pub(crate) const TEST_NUM: &str = "123456789";
@@ -12,7 +12,7 @@ pub(crate) struct MockProvider {}
 
 #[async_trait::async_trait(?Send)]
 impl ProviderClient for MockProvider {
-    async fn get_all_numbers(&mut self) -> SMSServiceResult<Vec<Number>> {
+    async fn get_all_numbers(&mut self) -> SmsServiceResult<Vec<Number>> {
         return Ok(vec![Number {
             number: String::from(TEST_NUM),
             country: Some(String::from(TEST_COUNTRY)),
@@ -20,7 +20,10 @@ impl ProviderClient for MockProvider {
         }]);
     }
 
-    async fn get_messages(&mut self, _: &Number) -> SMSServiceResult<Vec<Message>> {
+    async fn get_messages(
+        &mut self,
+        _: &Number,
+    ) -> SmsServiceResult<Vec<Message>> {
         return Ok(vec![Message {
             body: String::from(TEST_MSG),
             originator: Some(String::from(TEST_ORIG)),

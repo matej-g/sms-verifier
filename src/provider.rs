@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 pub mod upmasked;
 
 use self::upmasked::UpmaskedProvider;
-use crate::{Error, SMSServiceError, SMSServiceResult};
+use crate::{Error, SmsServiceError, SmsServiceResult};
 
 /// Number obtained from (or provided to) a provider.
 #[derive(Clone, Debug, Deserialize)]
@@ -39,26 +39,33 @@ pub fn instantiate_with_provider<T: ProviderClient + Default>() -> T {
 #[async_trait::async_trait(?Send)]
 pub trait ProviderClient {
     /// Method to list all available phone numbers from a provider.
-    async fn get_all_numbers(&mut self) -> SMSServiceResult<Vec<Number>>;
+    async fn get_all_numbers(&mut self) -> SmsServiceResult<Vec<Number>>;
 
     /// Method to retrieve messages recieved on a specified `number`.
-    async fn get_messages(&mut self, number: &Number) -> SMSServiceResult<Vec<Message>>;
+    async fn get_messages(
+        &mut self,
+        number: &Number,
+    ) -> SmsServiceResult<Vec<Message>>;
 
     /// Retrieves any available number for use.
-    async fn get_any_number(&mut self) -> SMSServiceResult<Number> {
+    async fn get_any_number(&mut self) -> SmsServiceResult<Number> {
         let numbers = self.get_all_numbers().await?;
 
         if let Some(n) = numbers.first() {
             return Ok(n.to_owned());
         } else {
-            return Err(SMSServiceError::from(Error::NotFound));
+            return Err(SmsServiceError::from(Error::NotFound));
         }
     }
 
-    /// Tries to obtain a number for specified country. Format of `country` can be provider-specific;
-    /// normally the two-letter country code (ISO 3166-1 alpha-2) should be asssumed. Returns `NotFound`
-    /// error if no number is available.
-    async fn get_number_for_country(&mut self, country: &str) -> SMSServiceResult<Number> {
+    /// Tries to obtain a number for specified country. Format of `country` can
+    /// be provider-specific; normally the two-letter country code (ISO
+    /// 3166-1 alpha-2) should be asssumed. Returns `NotFound` error if no
+    /// number is available.
+    async fn get_number_for_country(
+        &mut self,
+        country: &str,
+    ) -> SmsServiceResult<Number> {
         let numbers = self.get_all_numbers().await?;
 
         let num_with_country = numbers.into_iter().find(|n| {
@@ -70,22 +77,25 @@ pub trait ProviderClient {
         });
 
         if let Some(n) = num_with_country {
-            return Ok(n.to_owned());
+            return Ok(n);
         } else {
-            return Err(SMSServiceError::from(Error::NotFound));
+            return Err(SmsServiceError::from(Error::NotFound));
         }
     }
 
     /// Retrieves last message recieved on `number`. Returns `NotFound`
     /// error if no message is available.
-    async fn get_latest_message(&mut self, number: &Number) -> SMSServiceResult<Message> {
+    async fn get_latest_message(
+        &mut self,
+        number: &Number,
+    ) -> SmsServiceResult<Message> {
         let mut msgs = self.get_messages(number).await?;
         msgs.sort_by(|m1, m2| m2.created_at.cmp(&m1.created_at));
 
         if let Some(m) = msgs.first() {
             return Ok(m.to_owned());
         } else {
-            return Err(SMSServiceError::from(Error::NotFound));
+            return Err(SmsServiceError::from(Error::NotFound));
         }
     }
 
@@ -95,7 +105,7 @@ pub trait ProviderClient {
         &mut self,
         number: &Number,
         originator: &str,
-    ) -> SMSServiceResult<Message> {
+    ) -> SmsServiceResult<Message> {
         let mut msgs = self.get_messages(number).await?;
         msgs.sort_by(|m1, m2| m2.created_at.cmp(&m1.created_at));
 
@@ -108,9 +118,9 @@ pub trait ProviderClient {
         });
 
         if let Some(m) = msg_with_originator {
-            return Ok(m.to_owned());
+            return Ok(m);
         } else {
-            return Err(SMSServiceError::from(Error::NotFound));
+            return Err(SmsServiceError::from(Error::NotFound));
         }
     }
 }
